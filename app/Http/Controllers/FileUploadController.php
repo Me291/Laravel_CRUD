@@ -3,66 +3,50 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class FileUploadController extends Controller
 {
-    // Display the file upload form
     public function fileUpload()
     {
-        return view('file-upload');  // Ensure file-upload.blade.php exists in resources/views
+        return view('file-upload');
     }
 
-    // Handle the file upload and rename the file
+    public function fileUploadRename()
+    {
+        return view('file-upload-rename');
+    }
+
     public function prosesFileUploadRename(Request $request)
     {
-        // Validate the form inputs
+        // Validasi input
         $request->validate([
-            'nama_gambar' => 'required|min:5|alpha_dash',  // Validate image name
-            'gambar_profile' => 'required|file|image|max:1024',  // Validate the uploaded file
+            'nama_gambar' => 'required|min:5|alpha_dash',
+            'gambar_profile' => 'required|file|image|max:10000',
         ]);
-
-        // Get the original file extension
+    
+        // Ambil ekstensi file asli
         $extFile = $request->gambar_profile->getClientOriginalExtension();
-
-        // Generate the final file name by combining the input image name with the extension
+    
+        // Generate nama file baru menggunakan input nama_gambar
         $namaFile = $request->nama_gambar . '.' . $extFile;
-
-        // Store the file in the public directory (in storage/app/public/gambar)
-        $request->gambar_profile->storeAs('public/gambar', $namaFile);
-
-        // Generate the public URL to access the uploaded image
-        $pathPublic = asset('storage/gambar/' . $namaFile);
-
-        // Display a success message and show the uploaded image
-        return view('file-upload-success', compact('pathPublic', 'namaFile'));
+    
+        // Simpan file di storage/app/public/images
+        $path = $request->gambar_profile->storeAs('public/images', $namaFile);
+    
+        // Generate URL untuk mengakses file melalui storage link
+        $pathPublic = asset('storage/images/' . $namaFile);
+    
+        // Tampilkan hasil upload
+        echo "<div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px; max-width: 400px; margin: 20px auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);'>
+                 <h3 style='color: #28a745; text-align: center;'>Upload Successful!</h3>
+                 <p style='text-align: center; color: #555;'>Your image has been uploaded successfully.</p>
+                 <div style='text-align: center; margin-bottom: 15px;'>
+                     <a href='$pathPublic' style='text-decoration: none; color: #007bff; font-weight: bold;' target='_blank'>$namaFile</a>
+                 </div>
+                 <div style='text-align: center;'>
+                     <img src='$pathPublic' alt='Uploaded Image' style='max-width: 100%; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);'>
+                 </div>
+               </div>";
     }
-
-    // Handle the renaming of the uploaded file
-    public function renameFile(Request $request)
-    {
-        // Validate the new file name
-        $request->validate([
-            'new_name' => 'required|min:5|alpha_dash',
-            'old_name' => 'required',
-        ]);
-
-        // Define paths for the old and new files
-        $oldPath = storage_path('app/public/gambar/' . $request->old_name);
-        $newPath = storage_path('app/public/gambar/' . $request->new_name);
-
-        // Check if the file exists
-        if (file_exists($oldPath)) {
-            // Rename the file
-            rename($oldPath, $newPath);
-
-            // Generate the new path
-            $newPublicPath = asset('storage/gambar/' . $request->new_name);
-
-            // Redirect with success message
-            return redirect()->route('file-upload-success', ['newFileName' => $request->new_name, 'newFilePath' => $newPublicPath]);
-        }
-
-        return redirect()->back()->with('error', 'File not found!');
-    }
+    
 }

@@ -14,5 +14,8 @@ Route::get('/form-pendaftaran/{locale?}', [MahasiswaController::class, 'formPend
 Route::post('/proses-form', [MahasiswaController::class, 'prosesForm']);
 Route::resource('mahasiswas', MahasiswaController::class);
 
-Route::get('/file-upload', [FileUploadController::class, 'fileUpload']);  // GET route for file upload form
-Route::post('/file-upload-rename', [FileUploadController::class, 'prosesFileUploadRename']);  // POST route to handle file upload and rename
+Route::get('/file-upload-rename', [FileUploadController::class,
+'fileUploadRename']);
+
+Route::post('/file-upload-rename', [FileUploadController::class,
+'prosesFileUploadRename']);
